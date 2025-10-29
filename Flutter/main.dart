@@ -18,7 +18,6 @@ num clampTernary(num x, num min, num max) {
   return lower > max ? max : lower;
 }
 
-
 /// --- Switch case: implementation using switch case construct ---
 num clampSwitch(num x, num min, num max) {
   // (x - min).sign and (x - max).sign yield -1, 0, or 1 (as double).
@@ -45,8 +44,6 @@ num clampSwitch(num x, num min, num max) {
   }
 }
 
-
-
 /// --- Branchless: arithmetic version without if ---
 num clampBranchless(num x, num min, num max) {
   final int useMin = (1 - (x - min).sign.toInt()) >> 1; // 1 if x < min, otherwise 0
@@ -55,7 +52,6 @@ num clampBranchless(num x, num min, num max) {
 
   return useMin * min + useX * x + useMax * max;
 }
-
 
 /// --- Out of the box: built-in method from dart:math ---
 num clampStandard(num x, num min, num max) => x.clamp(min, max);
@@ -101,9 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int fastest = 1;
   int _testRunCount = 0;
 
-  // CHANGE 1: Added fields to store distribution and scenario timings
-  // These fields are used to show detailed diagnostics for the three
-  // controlled datasets: ALL_BELOW, ALL_INSIDE, ALL_ABOVE.
+  // Fields to store distribution and scenario timings
   int distBelow = 0;
   int distInside = 0;
   int distAbove = 0;
@@ -159,8 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
           (_) => (rnd.nextDouble() * 1000 - 500),
     );
 
-    // CHANGE 2: Calculate distribution of random sample
-    // This helps to understand branch prediction effects later.
+    // Calculate distribution of random sample
     distBelow = _lastValues.where((v) => v < MIN).length;
     distInside = _lastValues.where((v) => v >= MIN && v <= MAX).length;
     distAbove = _lastValues.where((v) => v > MAX).length;
@@ -216,10 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     sw5.stop();
 
-    // CHANGE 3: Added measurements on three controlled datasets
-    // ALL_BELOW  -> every value strictly less than MIN
-    // ALL_INSIDE -> every value strictly inside [MIN, MAX]
-    // ALL_ABOVE  -> every value strictly greater than MAX
+    // Added measurements on three controlled datasets
     final allBelow = List<double>.filled(AMOUNT_OF_CALLS, MIN - 1.0);
     final allInside = List<double>.filled(AMOUNT_OF_CALLS, (MIN + MAX) / 2.0);
     final allAbove = List<double>.filled(AMOUNT_OF_CALLS, MAX + 1.0);
@@ -273,11 +263,11 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Количество вызовов: $AMOUNT_OF_CALLS'),
-              Text('Количество запусков теста: $_testRunCount'),
+              Text('Number of calls: $AMOUNT_OF_CALLS'),
+              Text('Number of test runs: $_testRunCount'),
               const SizedBox(height: 15),
 
-              const Text('=== ВРЕМЯ ВЫПОЛНЕНИЯ (микросекунды) ==='),
+              const Text('=== EXECUTION TIME (microseconds) ==='),
               Text(
                 'clampIf:           ${sw1.elapsedMicroseconds.toString().padLeft(8)} μs',
               ),
@@ -295,7 +285,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
 
               const SizedBox(height: 15),
-              const Text('=== ИТОГОВЫЕ СУММЫ ==='),
+              const Text('=== FINAL SUMS ==='),
               Text('clampIf:           ${_formatNumber(sum1)}'),
               Text('clampTernary:      ${_formatNumber(sum2)}'),
               Text('clampSwitch:       ${_formatNumber(sum3)}'),
@@ -303,8 +293,8 @@ class _MyHomePageState extends State<MyHomePage> {
               Text('x.clamp(min, max): ${_formatNumber(sum5)}'),
 
               const SizedBox(height: 15),
-              const Text('=== ОТНОСИТЕЛЬНАЯ СКОРОСТЬ ==='),
-              const Text('(меньше = лучше)'),
+              const Text('=== RELATIVE SPEED ==='),
+              const Text('(less = better)'),
               Text(
                 'clampIf:           ${_formatRelativeSpeed(sw1.elapsedTicks)}',
               ),
@@ -322,29 +312,28 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
 
               const SizedBox(height: 25),
-              const Text('=== ПРОВЕРКА СЛУЧАЙНЫХ ЧИСЕЛ ==='),
+              const Text('=== RANDOM NUMBERS CHECK ==='),
               if (_testRunCount > 0) ...[
                 Text(
-                  'Суммы одинаковы: ${(sum1 == sum2 && sum2 == sum3 && sum3 == sum4 && sum4 == sum5) ? "ДА" : "НЕТ"}',
+                  'Sums are equal: ${(sum1 == sum2 && sum2 == sum3 && sum3 == sum4 && sum4 == sum5) ? "YES" : "NO"}',
                 ),
                 Text(
-                  'Тестируемый диапазон: [${_formatNumber(_lastValues.reduce(min))}, ${_formatNumber(_lastValues.reduce(max))}]',
+                  'Tested range: [${_formatNumber(_lastValues.reduce(min))}, ${_formatNumber(_lastValues.reduce(max))}]',
                 ),
-                Text('Допустимый диапазон: [$MIN, $MAX]'),
+                Text('Allowed range: [$MIN, $MAX]'),
 
                 const SizedBox(height: 15),
-                const Text('=== РАСПРЕДЕЛЕНИЕ В СЛУЧАЙНОЙ ВЫБОРКЕ ==='),
+                const Text('=== DISTRIBUTION IN RANDOM SAMPLE ==='),
                 Text('below:  $distBelow  (${(distBelow / AMOUNT_OF_CALLS * 100).toStringAsFixed(1)}%)'),
                 Text('inside: $distInside (${(distInside / AMOUNT_OF_CALLS * 100).toStringAsFixed(1)}%)'),
                 Text('above:  $distAbove  (${(distAbove / AMOUNT_OF_CALLS * 100).toStringAsFixed(1)}%)'),
 
                 const SizedBox(height: 15),
-                const Text('=== ВРЕМЕНА ДЛЯ КОНТРОЛЬНЫХ НАБОРОВ ==='),
-                const Text('(каждый набор содержит $AMOUNT_OF_CALLS однотипных значений)'),
+                const Text('=== TIMINGS FOR CONTROL SETS ==='),
+                const Text('(each set contains $AMOUNT_OF_CALLS values of the same type)'),
 
-                // CHANGE 5: Display scenario timings in a compact form
                 const SizedBox(height: 8),
-                Text('Все значения ниже границ промежутка:'),
+                Text('All values below range:'),
                 Text('  clampIf:        ${scenarioTimes['ALL_BELOW']![0].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_BELOW']![0] / fastestAllBelow).toStringAsFixed(2)})'),
                 Text('  clampTernary:   ${scenarioTimes['ALL_BELOW']![1].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_BELOW']![1] / fastestAllBelow).toStringAsFixed(2)})'),
                 Text('  clampSwitch:    ${scenarioTimes['ALL_BELOW']![2].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_BELOW']![2] / fastestAllBelow).toStringAsFixed(2)})'),
@@ -352,7 +341,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text('  x.clamp:        ${scenarioTimes['ALL_BELOW']![4].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_BELOW']![4] / fastestAllBelow).toStringAsFixed(2)})'),
 
                 const SizedBox(height: 6),
-                Text('Все значения в границах промежутка:'),
+                Text('All values inside range:'),
                 Text('  clampIf:        ${scenarioTimes['ALL_INSIDE']![0].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_INSIDE']![0] / fastestAllInside).toStringAsFixed(2)})'),
                 Text('  clampTernary:   ${scenarioTimes['ALL_INSIDE']![1].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_INSIDE']![1] / fastestAllInside).toStringAsFixed(2)})'),
                 Text('  clampSwitch:    ${scenarioTimes['ALL_INSIDE']![2].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_INSIDE']![2] / fastestAllInside).toStringAsFixed(2)})'),
@@ -360,7 +349,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text('  x.clamp:        ${scenarioTimes['ALL_INSIDE']![4].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_INSIDE']![4] / fastestAllInside).toStringAsFixed(2)})'),
 
                 const SizedBox(height: 6),
-                Text('Все значения выше границ промежутка:'),
+                Text('All values above range:'),
                 Text('  clampIf:        ${scenarioTimes['ALL_ABOVE']![0].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_ABOVE']![0] / fastestAllAbove).toStringAsFixed(2)})'),
                 Text('  clampTernary:   ${scenarioTimes['ALL_ABOVE']![1].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_ABOVE']![1] / fastestAllAbove).toStringAsFixed(2)})'),
                 Text('  clampSwitch:    ${scenarioTimes['ALL_ABOVE']![2].toString().padLeft(6)} μs  (${(scenarioTimes['ALL_ABOVE']![2] / fastestAllAbove).toStringAsFixed(2)})'),
@@ -373,7 +362,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: test,
-        tooltip: 'Запустить тест',
+        tooltip: 'Run test',
         child: const Icon(Icons.play_arrow),
       ),
     );
