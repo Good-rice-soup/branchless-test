@@ -6,7 +6,7 @@
 
 const int STR_LEN = 2048;
 
-// === Генерация случайных строк ===
+// === Random string generation ===
 void randStr(char* s) {
     for (int i = 0; i < STR_LEN; i++) {
         s[i] = (rand() % 2 == 0)
@@ -16,7 +16,7 @@ void randStr(char* s) {
     s[STR_LEN] = '\0';
 }
 
-// === Тестируемые функции ===
+// === Tested functions ===
 void obviouseUpperCase(char *str) {
     for (size_t i = 0; str[i] != '\0'; ++i)
         if (str[i] >= 'a' && str[i] <= 'z')
@@ -34,7 +34,7 @@ void branchlessUpperCase2(char *str) {
         str[i] -= 32 * (str[i] >= 'a' && str[i] <= 'z');
 }
 
-// === Служебные структуры ===
+// === Utility structures ===
 typedef void (*test_func_t)(char *);
 struct TestCase {
     const char *name;
@@ -42,7 +42,7 @@ struct TestCase {
     long long cycles;
 };
 
-// === Вспомогательные функции ===
+// === Helper functions ===
 char **makeList(int count) {
     char **list = malloc(count * sizeof(char *));
     if (!list) return NULL;
@@ -79,7 +79,7 @@ void warmUp(const char *orig) {
     free(buf);
 }
 
-// === Измерение одной функции ===
+// === Single function measurement ===
 void test_function(struct TestCase *test, int iterations) {
     char **list = makeList(iterations);
     if (!list) return;
@@ -96,13 +96,13 @@ void test_function(struct TestCase *test, int iterations) {
     freeList(list, iterations);
 
     test->cycles = end.QuadPart - start.QuadPart;
-    test->cycles = (test->cycles * 1000000000LL) / freq.QuadPart; // в наносекундах
+    test->cycles = (test->cycles * 1000000000LL) / freq.QuadPart; // in nanoseconds
 }
 
-// === Печать результатов ===
+// === Results printing ===
 void print_results(struct TestCase *tests, int num, int iterations) {
-    printf("\n=== РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ ===\n");
-    printf("%-20s %-30s %-15s\n", "Функция", "Время (нано сек)", "Время/вызов");
+    printf("\n=== TEST RESULTS ===\n");
+    printf("%-20s %-30s %-15s\n", "Function", "Time (nanosec)", "Time/call");
     printf("-----------------------------------------------\n");
 
     long long min = tests[0].cycles;
@@ -137,10 +137,10 @@ int main(void) {
     };
     int num_tests = sizeof(tests) / sizeof(tests[0]);
 
-    printf("\nПрогрев кэша...\n");
+    printf("\nCache warming up...\n");
     warmUp(orig);
 
-    printf("Запуск тестов (%d итераций)...\n", ITERATIONS);
+    printf("Running tests (%d iterations)...\n", ITERATIONS);
     for (int i = 0; i < num_tests; ++i)
         test_function(&tests[i], ITERATIONS);
 
