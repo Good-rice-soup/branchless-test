@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-const int AMOUNT_OF_CALLS = 1000000;
-const int MIN = -100;
-const double MAX = 200.0;
+const int amountOfCalls = 1000000;
+const int minimum = -100;
+const double maximum = 200.0;
 
 /// --- Branchy: classic implementation of clamp(x, min, max) ---
 num clampIf(num x, num min, num max) {
@@ -117,28 +117,38 @@ class _MyHomePageState extends State<MyHomePage> {
   List<int> measureOn(List<double> data) {
     // Helper: measure 5 functions on provided data and return microseconds
     final Stopwatch s1 = Stopwatch()..start();
-    double _s = 0;
-    for (final v in data) _s += clampIf(v, MIN, MAX);
+    double s = 0;
+    for (final v in data) {
+      s += clampIf(v, minimum, maximum);
+    }
     s1.stop();
     final int t1 = s1.elapsedMicroseconds;
 
     final Stopwatch s2 = Stopwatch()..start();
-    for (final v in data) _s += clampTernary(v, MIN, MAX);
+    for (final v in data) {
+      s += clampTernary(v, minimum, maximum);
+    }
     s2.stop();
     final int t2 = s2.elapsedMicroseconds;
 
     final Stopwatch s3 = Stopwatch()..start();
-    for (final v in data) _s += clampSwitch(v, MIN, MAX);
+    for (final v in data) {
+      s += clampSwitch(v, minimum, maximum);
+    }
     s3.stop();
     final int t3 = s3.elapsedMicroseconds;
 
     final Stopwatch s4 = Stopwatch()..start();
-    for (final v in data) _s += clampBranchless(v, MIN, MAX);
+    for (final v in data) {
+      s += clampBranchless(v, minimum, maximum);
+    }
     s4.stop();
     final int t4 = s4.elapsedMicroseconds;
 
     final Stopwatch s5 = Stopwatch()..start();
-    for (final v in data) _s += clampStandard(v, MIN, MAX);
+    for (final v in data) {
+      s += clampStandard(v, minimum, maximum);
+    }
     s5.stop();
     final int t5 = s5.elapsedMicroseconds;
 
@@ -149,14 +159,14 @@ class _MyHomePageState extends State<MyHomePage> {
   void test() {
     final rnd = Random();
     _lastValues = List.generate(
-      AMOUNT_OF_CALLS,
+      amountOfCalls,
           (_) => (rnd.nextDouble() * 1000 - 500),
     );
 
     // Calculate distribution of random sample
-    distBelow = _lastValues.where((v) => v < MIN).length;
-    distInside = _lastValues.where((v) => v >= MIN && v <= MAX).length;
-    distAbove = _lastValues.where((v) => v > MAX).length;
+    distBelow = _lastValues.where((v) => v < minimum).length;
+    distInside = _lastValues.where((v) => v >= minimum && v <= maximum).length;
+    distAbove = _lastValues.where((v) => v > maximum).length;
 
     sum1 = 0;
     sum2 = 0;
@@ -169,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ..reset()
       ..start();
     for (final v in _lastValues) {
-      sum1 += clampIf(v, MIN, MAX);
+      sum1 += clampIf(v, minimum, maximum);
     }
     sw1.stop();
 
@@ -178,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ..reset()
       ..start();
     for (final v in _lastValues) {
-      sum2 += clampTernary(v, MIN, MAX);
+      sum2 += clampTernary(v, minimum, maximum);
     }
     sw2.stop();
 
@@ -187,7 +197,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ..reset()
       ..start();
     for (final v in _lastValues) {
-      sum3 += clampSwitch(v, MIN, MAX);
+      sum3 += clampSwitch(v, minimum, maximum);
     }
     sw3.stop();
 
@@ -196,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ..reset()
       ..start();
     for (final v in _lastValues) {
-      sum4 += clampBranchless(v, MIN, MAX);
+      sum4 += clampBranchless(v, minimum, maximum);
     }
     sw4.stop();
 
@@ -205,14 +215,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ..reset()
       ..start();
     for (final v in _lastValues) {
-      sum5 += clampStandard(v, MIN, MAX);
+      sum5 += clampStandard(v, minimum, maximum);
     }
     sw5.stop();
 
     // Added measurements on three controlled datasets
-    final allBelow = List<double>.filled(AMOUNT_OF_CALLS, MIN - 1.0);
-    final allInside = List<double>.filled(AMOUNT_OF_CALLS, (MIN + MAX) / 2.0);
-    final allAbove = List<double>.filled(AMOUNT_OF_CALLS, MAX + 1.0);
+    final allBelow = List<double>.filled(amountOfCalls, minimum - 1.0);
+    final allInside = List<double>.filled(amountOfCalls, (minimum + maximum) / 2.0);
+    final allAbove = List<double>.filled(amountOfCalls, maximum + 1.0);
 
     scenarioTimes['ALL_BELOW'] = measureOn(allBelow);
     scenarioTimes['ALL_INSIDE'] = measureOn(allInside);
@@ -263,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Number of calls: $AMOUNT_OF_CALLS'),
+              Text('Number of calls: $amountOfCalls'),
               Text('Number of test runs: $_testRunCount'),
               const SizedBox(height: 15),
 
@@ -320,17 +330,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text(
                   'Tested range: [${_formatNumber(_lastValues.reduce(min))}, ${_formatNumber(_lastValues.reduce(max))}]',
                 ),
-                Text('Allowed range: [$MIN, $MAX]'),
+                Text('Allowed range: [$minimum, $maximum]'),
 
                 const SizedBox(height: 15),
                 const Text('=== DISTRIBUTION IN RANDOM SAMPLE ==='),
-                Text('below:  $distBelow  (${(distBelow / AMOUNT_OF_CALLS * 100).toStringAsFixed(1)}%)'),
-                Text('inside: $distInside (${(distInside / AMOUNT_OF_CALLS * 100).toStringAsFixed(1)}%)'),
-                Text('above:  $distAbove  (${(distAbove / AMOUNT_OF_CALLS * 100).toStringAsFixed(1)}%)'),
+                Text('below:  $distBelow  (${(distBelow / amountOfCalls * 100).toStringAsFixed(1)}%)'),
+                Text('inside: $distInside (${(distInside / amountOfCalls * 100).toStringAsFixed(1)}%)'),
+                Text('above:  $distAbove  (${(distAbove / amountOfCalls * 100).toStringAsFixed(1)}%)'),
 
                 const SizedBox(height: 15),
                 const Text('=== TIMINGS FOR CONTROL SETS ==='),
-                const Text('(each set contains $AMOUNT_OF_CALLS values of the same type)'),
+                const Text('(each set contains $amountOfCalls values of the same type)'),
 
                 const SizedBox(height: 8),
                 Text('All values below range:'),
